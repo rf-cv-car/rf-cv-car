@@ -1,0 +1,29 @@
+<script>
+    const HEARTBEAT_PERIOD_MS = 10, NOOP_CODE = 'n', CODES = {
+        'ArrowUp': 'w',
+        'ArrowDown': 's',
+        'ArrowLeft': 'a',
+        'ArrowRight': 'd',
+        'ArrowLeft,ArrowUp': 'q',
+        'ArrowRight,ArrowUp': 'e',
+        'ArrowDown,ArrowLeft': 'z',
+        'ArrowDown,ArrowRight': 'c'
+    };
+
+    let activeSocket = null, keysPressed = new Set();
+
+    const socket = new WebSocket(location.href.replace(/^http/, 'ws'));
+    socket.onopen = () => { activeSocket = socket };
+    socket.onclose = () => { activeSocket = null; alert('disconnected'); }
+    socket.onmessage = ({ data }) => console.log(data);
+
+    function sendCode() {
+        const keys = [...keysPressed].sort().join(',');
+
+        activeSocket?.send(CODES[keys] || NOOP_CODE);
+    }
+
+    addEventListener('keydown', ({ key }) => keysPressed.add(key));
+    addEventListener('keyup', ({ key }) => keysPressed.delete(key));
+    setInterval(sendCode, HEARTBEAT_PERIOD_MS);
+</script>
